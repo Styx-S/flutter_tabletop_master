@@ -10,6 +10,9 @@ class DebugConsoleWidget extends StatefulWidget {
 
 class _DebugConsoleState extends State<DebugConsoleWidget> {
   bool hidden = true;
+  List<String> _strs = List<String>.empty(growable: true);
+  TextEditingController _consoleInputCtrl = TextEditingController();
+  ScrollController _consoleScrollCtrl = ScrollController();
 
   _DebugConsoleState() {
     DebugConsole().registerConsoleHiddenCallback((hidden) {
@@ -18,11 +21,18 @@ class _DebugConsoleState extends State<DebugConsoleWidget> {
       });
     });
 
-    DebugConsole().registerInfoCallback((str) {});
+    DebugConsole().registerInfoCallback((str) {
+      setState(() {
+        _strs.add(str);
+      });
+    });
+    _strs.add("console init...");
   }
 
   @override
   Widget build(BuildContext context) {
+
+
     return Visibility(
         visible: !hidden,
         child: Material(
@@ -45,8 +55,23 @@ class _DebugConsoleState extends State<DebugConsoleWidget> {
                     }),
               ],
             ),
-            Row(),
-            Row(),
+            Expanded(child: ListView.builder(
+              itemCount: _strs.length,
+              controller: _consoleScrollCtrl,
+              itemBuilder: (BuildContext context, int index){
+                return Text(_strs[index]);
+            })),
+            Row(
+              children: [
+                Expanded(child: TextField(controller: _consoleInputCtrl)),
+                TextButton(onPressed: (){
+                  if (_consoleInputCtrl.text.length > 0) {
+                    DebugConsole().inputCommand(_consoleInputCtrl.text);
+                    _consoleInputCtrl.clear();
+                  }
+                }, child: Text("输入"))
+              ],
+            ),
           ]),
         )));
   }

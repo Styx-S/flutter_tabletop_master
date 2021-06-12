@@ -1,5 +1,6 @@
 typedef void DebugInfoCallback(String str);
 typedef void DebugConsoleHiddenCallback(bool hidden);
+typedef void DebugCommandHandler(String cmd);
 
 class DebugConsole {
   factory DebugConsole() => _getInstance();
@@ -15,6 +16,7 @@ class DebugConsole {
 
   DebugInfoCallback? _debugInfoCallback;
   DebugConsoleHiddenCallback? _consoleHiddenCallback;
+  List<DebugCommandHandler> handlers = List<DebugCommandHandler>.empty(growable: true);
   void registerInfoCallback(DebugInfoCallback callback) {
     _debugInfoCallback = callback;
   }
@@ -43,6 +45,18 @@ class DebugConsole {
       return;
     }
     _consoleHiddenCallback!(true);
+  }
+
+  void inputCommand(String cmd) {
+    for (var h in handlers) {
+      h(cmd);
+    }
+
+    debugInfo("\$ " + cmd);
+  }
+
+  void regsiterCommandHandler(DebugCommandHandler handler) {
+    handlers.add(handler);
   }
 
 }
